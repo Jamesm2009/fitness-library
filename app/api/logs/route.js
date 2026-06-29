@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import redis from '@/lib/redis';
 
-// GET — fetch workout history (all logs for a workout)
-export async function GET(request, { params }) {
+// GET /api/logs?workout_id=xxx — fetch workout history
+export async function GET(request) {
   try {
-    const { id } = params;
-    const ids = await redis.lrange(`logs:${id}`, 0, -1);
+    const { searchParams } = new URL(request.url);
+    const workoutId = searchParams.get('workout_id');
+
+    if (!workoutId) {
+      return NextResponse.json({ error: 'workout_id required' }, { status: 400 });
+    }
+
+    const ids = await redis.lrange(`logs:${workoutId}`, 0, -1);
 
     if (!ids || ids.length === 0) {
       return NextResponse.json({ logs: [] });
@@ -30,12 +36,15 @@ export async function GET(request, { params }) {
   }
 }
 
-// POST — save a completed workout log
-export async function POST(request, { params }) {
+// POST /api/logs — save a completed workout log (workout_id in body)
+export async function POST(request) {
   try {
-    const { id } = params;
     const body = await request.json();
-    const { exercises, started_at, notes } = body;
+    const { workout_id, exercises, started_at, notes } = body;
+
+    if (!workout_id) {
+      return NextResponse.json({ error: 'workout_id required' }, { status: 400 });
+    }
 
     if (!exercises || exercises.length === 0) {
       return NextResponse.json(
@@ -45,7 +54,7 @@ export async function POST(request, { params }) {
     }
 
     // Get workout name
-    const workoutRaw = await redis.get(`workout:${id}`);
+    const workoutRaw = await redis.get(`workout:${workout_id}`);
     const workout = workoutRaw
       ? (typeof workoutRaw === 'string' ? JSON.parse(workoutRaw) : workoutRaw)
       : null;
@@ -66,7 +75,7 @@ export async function POST(request, { params }) {
 
     const log = {
       id: logId,
-      workout_id: id,
+      workout_id,
       workout_name: workout?.name || 'Workout',
       started_at: started_at || new Date().toISOString(),
       completed_at: new Date().toISOString(),
@@ -78,7 +87,7 @@ export async function POST(request, { params }) {
 
     // Save log and add to workout's log index
     await redis.set(`log:${logId}`, JSON.stringify(log));
-    await redis.lpush(`logs:${id}`, logId);
+    await redis.lpush(`logs:${workout_id}`, logId);
 
     return NextResponse.json({ log });
   } catch (error) {
