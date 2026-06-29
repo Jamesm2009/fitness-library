@@ -92,6 +92,6 @@ export async function POST(request) {
     return NextResponse.json({ log });
   } catch (error) {
     console.error('Log POST error:', error);
-    return NextResponse.json({ error: 'Failed to save log' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to save log' }, { status: 500 });
   }
 }
