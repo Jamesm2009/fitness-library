@@ -34,7 +34,7 @@ export default function ExerciseCard({ exercise, onSelect, onAddToWorkout, isInW
 
       {/* Info */}
       <div className="p-3">
-        <h3 className="text-sm font-semibold text-white leading-tight line-clamp-2 mb-2">
+        <h3 className="text-sm font-medium text-slate-100 leading-tight line-clamp-2 mb-2">
           {exercise.name}
         </h3>
         <div className="flex flex-wrap gap-1.5">
