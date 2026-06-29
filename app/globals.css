@@ -13,6 +13,9 @@
 body {
   background-color: var(--surface);
   color: #F1F5F9;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom scrollbar */
