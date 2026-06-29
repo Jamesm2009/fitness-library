@@ -97,10 +97,10 @@ export default function WorkoutsPage() {
     if (!editName.trim() || editExercises.length === 0) return;
     setSavingEdit(true);
     try {
-      const res = await fetch(`/api/workouts/${workoutId}`, {
+      const res = await fetch('/api/workouts', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editName.trim(), exercises: editExercises }),
+        body: JSON.stringify({ id: workoutId, name: editName.trim(), exercises: editExercises }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -120,8 +120,8 @@ export default function WorkoutsPage() {
     setDeleteError('');
     try {
       const url = includeHistory
-        ? `/api/workouts/${id}?include_history=true`
-        : `/api/workouts/${id}`;
+        ? `/api/workouts?id=${id}&include_history=true`
+        : `/api/workouts?id=${id}`;
       const res = await fetch(url, { method: 'DELETE' });
       const data = await res.json();
 
