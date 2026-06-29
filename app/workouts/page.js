@@ -11,6 +11,7 @@ export default function WorkoutsPage() {
   const [editingId, setEditingId] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
 
   // Workout logger state
   const [activeWorkout, setActiveWorkout] = useState(null);
@@ -116,20 +117,28 @@ export default function WorkoutsPage() {
   // --- Delete functions ---
   async function handleDelete(id, includeHistory) {
     setDeleting(id);
+    setDeleteError('');
     try {
       const url = includeHistory
         ? `/api/workouts/${id}?include_history=true`
         : `/api/workouts/${id}`;
       const res = await fetch(url, { method: 'DELETE' });
-      if (res.ok) {
-        setWorkouts(workouts.filter(w => w.id !== id));
-        if (expandedId === id) setExpandedId(null);
-        if (historyId === id) setHistoryId(null);
-        if (editingId === id) cancelEditing();
-        setDeleteConfirm(null);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setDeleteError(data.error || `Delete failed (${res.status})`);
+        return;
       }
+
+      setWorkouts(workouts.filter(w => w.id !== id));
+      if (expandedId === id) setExpandedId(null);
+      if (historyId === id) setHistoryId(null);
+      if (editingId === id) cancelEditing();
+      setDeleteConfirm(null);
+      setDeleteError('');
     } catch (err) {
       console.error('Failed to delete workout:', err);
+      setDeleteError(`Network error: ${err.message}`);
     } finally {
       setDeleting(null);
     }
@@ -261,11 +270,16 @@ export default function WorkoutsPage() {
               </button>
             </div>
             <button
-              onClick={() => setDeleteConfirm(null)}
+              onClick={() => { setDeleteConfirm(null); setDeleteError(''); }}
               className="w-full mt-3 p-2 text-xs text-slate-500 hover:text-white transition-colors"
             >
               Cancel
             </button>
+            {deleteError && (
+              <div className="mt-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <p className="text-red-400 text-xs">{deleteError}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
