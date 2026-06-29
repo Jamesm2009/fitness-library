@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import redis from '@/lib/redis';
 
+export const dynamic = 'force-dynamic';
+
 const GITHUB_RAW_URL =
   'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json';
 
