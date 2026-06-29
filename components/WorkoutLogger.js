@@ -87,24 +87,50 @@ export default function WorkoutLogger({ workout, onComplete, onCancel }) {
     0
   );
 
+  const [saveError, setSaveError] = useState('');
+
   async function handleFinish() {
     setSaving(true);
+    setSaveError('');
     try {
-      const res = await fetch(`/api/workouts/${workout.id}/logs`, {
+      // Slim payload — strip fields the API doesn't need
+      const trimmedExercises = exercises.map(ex => ({
+        exercise_id: ex.exercise_id,
+        name: ex.name,
+        target: ex.target,
+        equipment: ex.equipment,
+        cdn_gif: ex.cdn_gif,
+        target_sets: ex.target_sets,
+        target_reps: ex.target_reps,
+        sets: ex.sets.map(s => ({
+          weight: s.weight || 0,
+          reps: s.reps || 0,
+          completed: !!s.completed,
+        })),
+      }));
+
+      const res = await fetch('/api/logs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          exercises,
+          workout_id: workout.id,
+          exercises: trimmedExercises,
           started_at: startedAt,
           notes,
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        onComplete(data.log);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSaveError(data.error || `Save failed (${res.status})`);
+        return;
       }
+
+      onComplete(data.log);
     } catch (err) {
       console.error('Failed to save log:', err);
+      setSaveError('Network error — check your connection and try again.');
     } finally {
       setSaving(false);
     }
@@ -165,6 +191,15 @@ export default function WorkoutLogger({ workout, onComplete, onCancel }) {
           </div>
         </div>
       </div>
+
+      {/* Save error display */}
+      {saveError && (
+        <div className="max-w-2xl mx-auto px-4 pt-3">
+          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+            <p className="text-red-400 text-sm">{saveError}</p>
+          </div>
+        </div>
+      )}
 
       {/* Exercise list */}
       <div className="max-w-2xl mx-auto px-4 py-4 pb-32 space-y-4">
