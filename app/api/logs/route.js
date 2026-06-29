@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import redis from '@/lib/redis';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/logs?workout_id=xxx — fetch workout history
 export async function GET(request) {
   try {
