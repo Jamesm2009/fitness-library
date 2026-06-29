@@ -30,7 +30,7 @@ export default function WorkoutBuilder({ items, onUpdateItem, onRemoveItem, onSa
             <span className="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">
               {items.length}
             </span>
-            <span className="text-sm font-semibold text-white">
+            <span className="text-sm font-medium text-slate-200">
               {items.length} exercise{items.length !== 1 ? 's' : ''} in workout
             </span>
           </div>
@@ -58,7 +58,7 @@ export default function WorkoutBuilder({ items, onUpdateItem, onRemoveItem, onSa
 
                   {/* Name + controls */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{item.name}</p>
+                    <p className="text-sm font-normal text-slate-200 truncate">{item.name}</p>
                     <div className="flex items-center gap-3 mt-1.5">
                       {/* Sets */}
                       <div className="flex items-center gap-1">
@@ -129,7 +129,7 @@ export default function WorkoutBuilder({ items, onUpdateItem, onRemoveItem, onSa
               <button
                 onClick={handleSave}
                 disabled={!workoutName.trim() || saving}
-                className="px-5 py-3 bg-accent hover:bg-accent-hover text-white text-sm font-semibold
+                className="px-5 py-3 bg-accent hover:bg-accent-hover text-white text-sm font-medium
                   rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {saving ? '...' : 'Save'}
