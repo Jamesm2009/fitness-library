@@ -1,97 +1,80 @@
 import { NextResponse } from 'next/server';
 import redis from '@/lib/redis';
 
-// GET /api/logs?workout_id=xxx — fetch workout history
-export async function GET(request) {
+// Helper to safely extract id from params (handles both sync and async)
+async function getId(params) {
+  const resolved = await params;
+  return resolved.id;
+}
+
+// GET — fetch a single workout
+export async function GET(request, { params }) {
   try {
-    const { searchParams } = new URL(request.url);
-    const workoutId = searchParams.get('workout_id');
-
-    if (!workoutId) {
-      return NextResponse.json({ error: 'workout_id required' }, { status: 400 });
+    const id = await getId(params);
+    const raw = await redis.get(`workout:${id}`);
+    if (!raw) {
+      return NextResponse.json({ error: 'Workout not found' }, { status: 404 });
     }
-
-    const ids = await redis.lrange(`logs:${workoutId}`, 0, -1);
-
-    if (!ids || ids.length === 0) {
-      return NextResponse.json({ logs: [] });
-    }
-
-    const pipeline = redis.pipeline();
-    ids.forEach(logId => pipeline.get(`log:${logId}`));
-    const results = await pipeline.exec();
-
-    const logs = results
-      .map(r => {
-        if (!r) return null;
-        return typeof r === 'string' ? JSON.parse(r) : r;
-      })
-      .filter(Boolean)
-      .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
-
-    return NextResponse.json({ logs });
+    const workout = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return NextResponse.json({ workout });
   } catch (error) {
-    console.error('Logs GET error:', error);
-    return NextResponse.json({ error: 'Failed to fetch logs' }, { status: 500 });
+    console.error('Workout GET error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch workout' }, { status: 500 });
   }
 }
 
-// POST /api/logs — save a completed workout log (workout_id in body)
-export async function POST(request) {
+// PUT — update a workout (name, exercises, sets/reps/rest)
+export async function PUT(request, { params }) {
   try {
+    const id = await getId(params);
     const body = await request.json();
-    const { workout_id, exercises, started_at, notes } = body;
+    const { name, exercises } = body;
 
-    if (!workout_id) {
-      return NextResponse.json({ error: 'workout_id required' }, { status: 400 });
+    const raw = await redis.get(`workout:${id}`);
+    if (!raw) {
+      return NextResponse.json({ error: 'Workout not found' }, { status: 404 });
     }
+    const existing = typeof raw === 'string' ? JSON.parse(raw) : raw;
 
-    if (!exercises || exercises.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one exercise required' },
-        { status: 400 }
-      );
-    }
-
-    // Get workout name
-    const workoutRaw = await redis.get(`workout:${workout_id}`);
-    const workout = workoutRaw
-      ? (typeof workoutRaw === 'string' ? JSON.parse(workoutRaw) : workoutRaw)
-      : null;
-
-    const logId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
-    // Calculate totals
-    let totalVolume = 0;
-    let totalSets = 0;
-    exercises.forEach(ex => {
-      ex.sets.forEach(set => {
-        if (set.completed) {
-          totalVolume += (set.weight || 0) * (set.reps || 0);
-          totalSets++;
-        }
-      });
-    });
-
-    const log = {
-      id: logId,
-      workout_id,
-      workout_name: workout?.name || 'Workout',
-      started_at: started_at || new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-      exercises,
-      notes: notes || '',
-      total_volume: totalVolume,
-      total_sets: totalSets,
+    const updated = {
+      ...existing,
+      name: name || existing.name,
+      exercises: exercises || existing.exercises,
+      exercise_count: (exercises || existing.exercises).length,
+      updated_at: new Date().toISOString(),
     };
 
-    // Save log and add to workout's log index
-    await redis.set(`log:${logId}`, JSON.stringify(log));
-    await redis.lpush(`logs:${workout_id}`, logId);
-
-    return NextResponse.json({ log });
+    await redis.set(`workout:${id}`, JSON.stringify(updated));
+    return NextResponse.json({ workout: updated });
   } catch (error) {
-    console.error('Log POST error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to save log' }, { status: 500 });
+    console.error('Workout PUT error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update workout' }, { status: 500 });
+  }
+}
+
+// DELETE — remove a workout and optionally its history
+export async function DELETE(request, { params }) {
+  try {
+    const id = await getId(params);
+    const { searchParams } = new URL(request.url);
+    const includeHistory = searchParams.get('include_history') === 'true';
+
+    await redis.del(`workout:${id}`);
+    await redis.lrem('workouts:list', 0, id);
+
+    if (includeHistory) {
+      const logIds = await redis.lrange(`logs:${id}`, 0, -1);
+      if (logIds && logIds.length > 0) {
+        const pipeline = redis.pipeline();
+        logIds.forEach(logId => pipeline.del(`log:${logId}`));
+        pipeline.del(`logs:${id}`);
+        await pipeline.exec();
+      }
+    }
+
+    return NextResponse.json({ success: true, history_deleted: includeHistory });
+  } catch (error) {
+    console.error('Workout DELETE error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete workout' }, { status: 500 });
   }
 }
