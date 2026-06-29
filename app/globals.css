@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: #0F1117;
+  --surface-card: #1A1D27;
+  --surface-elevated: #242836;
+  --accent: #FF6B35;
+  --teal: #2DD4BF;
+}
+
+body {
+  background-color: var(--surface);
+  color: #F1F5F9;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
+}
+
+/* Workout builder slide-up animation */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Exercise card hover lift */
+.exercise-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.exercise-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+/* Filter chip styles */
+.filter-chip {
+  transition: all 0.15s ease;
+}
+.filter-chip:hover {
+  background-color: var(--surface-elevated);
+}
+.filter-chip.active {
+  background-color: var(--accent);
+  color: white;
+}
