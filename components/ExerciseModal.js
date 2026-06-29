@@ -38,13 +38,13 @@ export default function ExerciseModal({ exercise, onClose, onAddToWorkout, isInW
 
         <div className="p-5">
           {/* Title + meta */}
-          <h2 className="text-xl font-bold text-white mb-3">{exercise.name}</h2>
+          <h2 className="text-xl font-semibold text-white mb-3">{exercise.name}</h2>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="px-2.5 py-1 text-xs rounded-full bg-accent/15 text-accent font-semibold capitalize">
+            <span className="px-2.5 py-1 text-xs rounded-full bg-accent/15 text-accent font-medium capitalize">
               {exercise.category}
             </span>
-            <span className="px-2.5 py-1 text-xs rounded-full bg-teal/15 text-teal font-semibold capitalize">
+            <span className="px-2.5 py-1 text-xs rounded-full bg-teal/15 text-teal font-medium capitalize">
               {exercise.target}
             </span>
             <span className="px-2.5 py-1 text-xs rounded-full bg-white/5 text-slate-300 capitalize">
@@ -70,7 +70,7 @@ export default function ExerciseModal({ exercise, onClose, onAddToWorkout, isInW
                 onClick={() => setLang(code)}
                 className={`px-3 py-1 text-xs rounded-lg transition-colors ${
                   lang === code
-                    ? 'bg-accent text-white font-semibold'
+                    ? 'bg-accent text-white font-medium'
                     : 'bg-white/5 text-slate-400 hover:text-white'
                 }`}
               >
@@ -83,7 +83,7 @@ export default function ExerciseModal({ exercise, onClose, onAddToWorkout, isInW
           <div className="space-y-2 mb-5">
             {steps.map((step, i) => (
               <div key={i} className="flex gap-3">
-                <span className="text-accent font-bold text-sm mt-0.5 shrink-0 w-5 text-right">
+                <span className="text-accent font-semibold text-sm mt-0.5 shrink-0 w-5 text-right">
                   {i + 1}
                 </span>
                 <p className="text-sm text-slate-300 leading-relaxed">{step.trim()}</p>
@@ -94,7 +94,7 @@ export default function ExerciseModal({ exercise, onClose, onAddToWorkout, isInW
           {/* Add to workout */}
           <button
             onClick={() => onAddToWorkout(exercise)}
-            className={`w-full py-3 rounded-xl font-semibold text-sm transition-colors ${
+            className={`w-full py-3 rounded-xl font-medium text-sm transition-colors ${
               isInWorkout
                 ? 'bg-teal/15 text-teal border border-teal/20'
                 : 'bg-accent hover:bg-accent-hover text-white'
