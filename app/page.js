@@ -262,7 +262,7 @@ export default function ExercisesPage() {
 
       {/* Save success toast */}
       {saveMessage && (
-        <div className="fixed top-20 right-4 z-50 bg-teal text-surface px-4 py-2 rounded-xl text-sm font-semibold shadow-lg slide-up">
+        <div className="fixed top-20 right-4 z-50 bg-teal text-surface px-4 py-2 rounded-xl text-sm font-medium shadow-lg slide-up">
           {saveMessage}
         </div>
       )}
