@@ -8,7 +8,7 @@ Exercise library and workout builder powered by Next.js, Upstash Redis, and the 
 - Browse 1,324 exercises with animated GIFs from ExerciseDB CDN
 - Search by name, target muscle, or muscle group
 - Filter by body part, equipment, and target muscle
-- Exercise detail modal with multilingual instructions (EN/ES/IT/TR)
+- Exercise detail modal with multilingual instructions (EN/ES)
 
 **Phase 2 — Workout Builder**
 - Add exercises to a workout from the library
