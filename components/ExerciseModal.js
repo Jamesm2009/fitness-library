@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-const LANG_LABELS = { en: 'English', es: 'Español' de: 'German' };
+const LANG_LABELS = { en: 'English', es: 'Español' };
 
 export default function ExerciseModal({ exercise, onClose, onAddToWorkout, isInWorkout }) {
   const [lang, setLang] = useState('en');
